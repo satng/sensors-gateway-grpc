@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/satng/sensors-gateway-grpc/pb"
+	_ "github.com/satng/sensors-gateway-grpc/taosSql"
+	"github.com/satng/sensors-gateway-grpc/taosTool"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -22,6 +24,12 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 }
 
 func main() {
+
+	//test taos db
+	if taosTool.Test() {
+		return
+	}
+
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
