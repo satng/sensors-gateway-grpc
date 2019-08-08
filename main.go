@@ -16,8 +16,9 @@ type server struct {
 }
 
 func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.SensorReply, error) {
-	log.Printf("Received: %v", in.Name)
-	return &pb.SensorReply{Message: "Hello " + in.Name}, nil
+	log.Printf("Received Header: %v,%v,%v", in.GetDeviceId(), in.GetRecordId(), in.GetSensorType())
+	log.Printf("Received Data: %v", in.GetDataStr())
+	return &pb.SensorReply{Message: "Hello " + in.DeviceId}, nil
 }
 
 func main() {
