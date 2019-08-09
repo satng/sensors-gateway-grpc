@@ -17,6 +17,7 @@ replace (
 	golang.org/x/text => github.com/golang/text v0.3.2
 	golang.org/x/time => github.com/golang/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools => github.com/golang/tools v0.0.0-20190807223507-b346f7fd45de
+	golang.org/x/xerrors => github.com/golang/xerrors v0.0.0-20190717185122-a985d3407aa7
 	google.golang.org/api => github.com/googleapis/google-api-go-client v0.7.0
 	google.golang.org/appengine => github.com/golang/appengine v1.6.1
 	google.golang.org/genproto => github.com/googleapis/go-genproto v0.0.0-20190801165951-fa694d86fc64
