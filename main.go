@@ -58,7 +58,7 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
 			i++
 
-			if i%20 == 0 {
+			if i%50 == 0 {
 				stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
 				taosTool.Insert(stmtSensorSql)
 				sql.Reset()
@@ -78,7 +78,7 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 			items := strings.Split(item, ";")
 			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v,%v,%v)`, items[6], items[0], items[1], items[2], items[3], items[4], items[5], items[7]))
 			i++
-			if i%20 == 0 {
+			if i%50 == 0 {
 				stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
 				taosTool.Insert(stmtSensorSql)
 				sql.Reset()
