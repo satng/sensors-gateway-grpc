@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/satng/sensors-gateway-grpc/pb"
+	"github.com/satng/sensors-gateway-grpc/taosTool"
 	"strings"
 
 	//_ "github.com/satng/sensors-gateway-grpc/taosSql"
@@ -20,34 +21,59 @@ const (
 type server struct {
 }
 
-const stmtSensorSql = `INSERT INTO d_%s USING sensors_data TAGS ('%s','%s','%s') VALUES`
+//CREATE TABLE acc_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
+//CREATE TABLE gyr_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
+//CREATE TABLE mag_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
+
+//CREATE TABLE gps_data (time TIMESTAMP,latitude FLOAT,longitude FLOAT,altitude FLOAT,accuracy FLOAT,bearing FLOAT,speed FLOAT,flag INT) TAGS(device_id BINARY(20),record_id BINARY(20))
+
+const stmtAccSensorSql = `INSERT INTO d_%s_acc USING acc_data TAGS ('%s','%s') VALUES`
+const stmtGyrSensorSql = `INSERT INTO d_%s_gyr USING gyr_data TAGS ('%s','%s') VALUES`
+const stmtMagSensorSql = `INSERT INTO d_%s_mag USING mag_data TAGS ('%s','%s') VALUES`
+const stmtGpsSensorSql = `INSERT INTO d_%s_gps USING gps_data TAGS ('%s','%s') VALUES`
 
 func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.SensorReply, error) {
 	log.Printf("Received Header: %v,%v,%v", in.GetDeviceId(), in.GetRecordId(), in.GetSensorType())
+	sensorType := in.GetSensorType()
+	stmtSensorSqlHeader := ""
+	isGps := false
+	if sensorType == "accelerometer" {
+		stmtSensorSqlHeader = fmt.Sprintf(stmtAccSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId())
+	} else if sensorType == "gyroscope" {
+		stmtSensorSqlHeader = fmt.Sprintf(stmtGyrSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId())
+	} else if sensorType == "magnetic" {
+		stmtSensorSqlHeader = fmt.Sprintf(stmtMagSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId())
+	} else if sensorType == "gps" {
+		isGps = true
+		stmtSensorSqlHeader = fmt.Sprintf(stmtGpsSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId())
+	}
 
-	if in.GetSensorType() != "gps" {
-		stmtSensorSqlHeader := fmt.Sprintf(stmtSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId(), in.GetSensorType())
-		var stmtSensorSqlContext bytes.Buffer
+	var stmtSensorSqlContext bytes.Buffer
+	if !isGps {
 		for _, item := range in.GetDataStr() {
 			//1565253030508;0.0000;9.8100;0.0000;57207591632172;1565253030488.63
 			items := strings.Split(item, ";")
-			ts_sensor := items[5]
-			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, ts_sensor[:strings.LastIndex(ts_sensor, ".")], items[0], items[1], items[2], items[3], items[4]))
+			tsSensor := items[5]
+			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
 		}
-
-		stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, stmtSensorSqlContext.String())
-		log.Printf("Received Data: %v", stmtSensorSql)
+	} else {
+		for _, item := range in.GetDataStr() {
+			//30.516360;114.359117;0.85;19.64;248.00;0.77;1564562033799;0
+			items := strings.Split(item, ";")
+			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v,%v,%v)`, items[6], items[0], items[1], items[2], items[3], items[4], items[5], items[7]))
+		}
 	}
-
+	stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, stmtSensorSqlContext.String())
+	//log.Printf("Received Data: %v", stmtSensorSql)
+	//save to db
+	taosTool.Insert(stmtSensorSql)
 	return &pb.SensorReply{Message: "Hello " + in.DeviceId}, nil
 }
 
 func main() {
 
 	//test taos db
-	//if taosTool.Test() {
-	//	return
-	//}
+	taosTool.InitDB()
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -58,5 +84,7 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
+	taosTool.CloseDB()
 	log.Println("server over...")
 }
