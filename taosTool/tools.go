@@ -30,6 +30,8 @@ func InitDB() {
 		os.Exit(0)
 	}
 	globalDB = db
+
+	fmt.Println("Taos database ok")
 }
 func CloseDB() {
 	globalDB.Close()
