@@ -31,6 +31,9 @@ func InitDB() {
 	}
 	globalDB = db
 
+	_, err = globalDB.Exec("use " + DBNAME)
+	checkErr(err)
+
 	fmt.Println("Taos database ok")
 }
 func CloseDB() {
