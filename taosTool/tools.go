@@ -24,11 +24,12 @@ var (
 func InitDB() {
 	// open connect to taos server
 	connStr := fmt.Sprintf(CONNDB, DBUSER, DBPASS, DBHOST, DBNAME)
-	globalDB, err := sql.Open(DRIVER, connStr)
+	db, err := sql.Open(DRIVER, connStr)
 	if err != nil {
 		fmt.Println("Open database error: %s\n", err)
 		os.Exit(0)
 	}
+	globalDB = db
 }
 func CloseDB() {
 	globalDB.Close()
