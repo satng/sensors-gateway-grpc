@@ -50,11 +50,16 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 
 	var stmtSensorSqlContext bytes.Buffer
 	if !isGps {
+		i := 0
 		for _, item := range in.GetDataStr() {
 			//1565253030508;0.0000;9.8100;0.0000;57207591632172;1565253030488.63
 			items := strings.Split(item, ";")
 			tsSensor := items[5]
 			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
+			i++
+			if i > 10 {
+				break
+			}
 		}
 	} else {
 		for _, item := range in.GetDataStr() {
