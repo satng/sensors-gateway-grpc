@@ -48,30 +48,49 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 		stmtSensorSqlHeader = fmt.Sprintf(stmtGpsSensorSql, in.GetDeviceId(), in.GetDeviceId(), in.GetRecordId())
 	}
 
-	var stmtSensorSqlContext bytes.Buffer
 	if !isGps {
 		i := 0
+		sql := bytes.Buffer{}
 		for _, item := range in.GetDataStr() {
 			//1565253030508;0.0000;9.8100;0.0000;57207591632172;1565253030488.63
 			items := strings.Split(item, ";")
 			tsSensor := items[5]
-			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
+			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
 			i++
-			if i > 10 {
-				break
+
+			if i%20 == 0 {
+				stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
+				taosTool.Insert(stmtSensorSql)
+				sql.Reset()
 			}
 		}
+		if sql.Len() > 0 {
+			stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
+			taosTool.Insert(stmtSensorSql)
+			sql.Reset()
+		}
+
 	} else {
+		i := 0
+		sql := bytes.Buffer{}
 		for _, item := range in.GetDataStr() {
 			//30.516360;114.359117;0.85;19.64;248.00;0.77;1564562033799;0
 			items := strings.Split(item, ";")
-			stmtSensorSqlContext.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v,%v,%v)`, items[6], items[0], items[1], items[2], items[3], items[4], items[5], items[7]))
+			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v,%v,%v)`, items[6], items[0], items[1], items[2], items[3], items[4], items[5], items[7]))
+			i++
+			if i%20 == 0 {
+				stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
+				taosTool.Insert(stmtSensorSql)
+				sql.Reset()
+			}
+
+		}
+		if sql.Len() > 0 {
+			stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, sql.String())
+			taosTool.Insert(stmtSensorSql)
+			sql.Reset()
 		}
 	}
-	stmtSensorSql := fmt.Sprintf(`%s %s;`, stmtSensorSqlHeader, stmtSensorSqlContext.String())
-	//log.Printf("Received Data: %v", stmtSensorSql)
-	//save to db
-	taosTool.Insert(stmtSensorSql)
 	return &pb.SensorReply{Message: "Hello " + in.DeviceId}, nil
 }
 
