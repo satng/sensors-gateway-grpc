@@ -21,11 +21,11 @@ const (
 type server struct {
 }
 
-//CREATE TABLE acc_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
-//CREATE TABLE gyr_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
-//CREATE TABLE mag_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(20),record_id BINARY(20))
+//CREATE TABLE acc_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(40),record_id BINARY(20))
+//CREATE TABLE gyr_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(40),record_id BINARY(20))
+//CREATE TABLE mag_data (ts_sensor TIMESTAMP, ts TIMESTAMP,x FLOAT,y FLOAT,z FLOAT,t TIMESTAMP) TAGS(device_id BINARY(40),record_id BINARY(20))
 
-//CREATE TABLE gps_data (time TIMESTAMP,latitude FLOAT,longitude FLOAT,altitude FLOAT,accuracy FLOAT,bearing FLOAT,speed FLOAT,flag INT) TAGS(device_id BINARY(20),record_id BINARY(20))
+//CREATE TABLE gps_data (time TIMESTAMP,latitude FLOAT,longitude FLOAT,altitude FLOAT,accuracy FLOAT,bearing FLOAT,speed FLOAT,flag INT) TAGS(device_id BINARY(40),record_id BINARY(20))
 
 const stmtAccSensorSql = `INSERT INTO d_%s_acc USING acc_data TAGS ('%s','%s') VALUES`
 const stmtGyrSensorSql = `INSERT INTO d_%s_gyr USING gyr_data TAGS ('%s','%s') VALUES`

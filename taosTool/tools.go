@@ -42,11 +42,18 @@ func CloseDB() {
 func Insert(sql string) {
 	st := time.Now().Nanosecond()
 	res, err := globalDB.Exec(sql)
-	checkErr(err)
-	affectd, err := res.RowsAffected()
-	checkErr(err)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
 	et := time.Now().Nanosecond()
-	fmt.Printf("insert data result:\n %d row(s) affectd (%6.6fs)\n\n", affectd, (float32(et-st))/1E9)
+	fmt.Printf("insert data result:\n %d row(s) affectd (%6.6fs)\n\n", affected, (float32(et-st))/1E9)
 }
 
 func checkErr(err error) {
