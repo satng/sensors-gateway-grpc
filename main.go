@@ -8,7 +8,7 @@ import (
 	"github.com/satng/sensors-gateway-grpc/taosTool"
 	"strings"
 
-	//_ "github.com/satng/sensors-gateway-grpc/taosSql"
+	_ "github.com/satng/sensors-gateway-grpc/taosSql"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -54,6 +54,10 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 		for _, item := range in.GetDataStr() {
 			//1565253030508;0.0000;9.8100;0.0000;57207591632172;1565253030488.63
 			items := strings.Split(item, ";")
+			if len(items) != 6 {
+				log.Print("strings formatter: %v", item)
+				continue
+			}
 			tsSensor := items[5]
 			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
 			i++
@@ -76,6 +80,10 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 		for _, item := range in.GetDataStr() {
 			//30.516360;114.359117;0.85;19.64;248.00;0.77;1564562033799;0
 			items := strings.Split(item, ";")
+			if len(items) != 8 {
+				log.Print("strings formatter: %v", item)
+				continue
+			}
 			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v,%v,%v)`, items[6], items[0], items[1], items[2], items[3], items[4], items[5], items[7]))
 			i++
 			if i%50 == 0 {
