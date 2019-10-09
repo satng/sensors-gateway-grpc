@@ -59,7 +59,15 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 				continue
 			}
 			tsSensor := items[5]
-			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:strings.LastIndex(tsSensor, ".")], items[0], items[1], items[2], items[3], items[4]))
+			tsIndex := strings.LastIndex(tsSensor, ".")
+			if tsIndex == -1 {
+				tsIndex = strings.LastIndex(tsSensor, ",")
+			}
+			if len(tsSensor) < 13 {
+				continue
+			}
+
+			sql.WriteString(fmt.Sprintf(`(%v,%v,%v,%v,%v,%v)`, tsSensor[:13], items[0], items[1], items[2], items[3], items[4]))
 			i++
 
 			if i%50 == 0 {
