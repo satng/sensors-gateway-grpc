@@ -53,7 +53,7 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 		sql := bytes.Buffer{}
 		for _, item := range in.GetDataStr() {
 			//1565253030508;0.0000;9.8100;0.0000;57207591632172;1565253030488.63
-			items := strings.Split(item, ";")
+			items := strings.Split(strings.Replace(item, ",", ".", -1), ";")
 			if len(items) != 6 {
 				log.Print("strings formatter: %v", item)
 				continue
@@ -87,7 +87,7 @@ func (s *server) DataPush(ctx context.Context, in *pb.SensorRequest) (*pb.Sensor
 		sql := bytes.Buffer{}
 		for _, item := range in.GetDataStr() {
 			//30.516360;114.359117;0.85;19.64;248.00;0.77;1564562033799;0
-			items := strings.Split(item, ";")
+			items := strings.Split(strings.Replace(item, ",", ".", -1), ";")
 			if len(items) != 8 {
 				log.Print("strings formatter: %v", item)
 				continue
